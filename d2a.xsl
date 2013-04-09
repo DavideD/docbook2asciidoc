@@ -474,7 +474,7 @@
     </xsl:if>
   </xsl:template>
 
-  <xsl:template match="literal|code">
+  <xsl:template match="literal|code|classname|parameter|varname|type|function">
     <xsl:if test="preceding-sibling::node()[1][self::replaceable] or following-sibling::node()[1][self::replaceable] or following-sibling::node()[1][self::emphasis] or substring(following-sibling::node()[1],1,1) = 's' or substring(following-sibling::node()[1],1,1) = '’'">
       <xsl:text>+</xsl:text>
     </xsl:if>
