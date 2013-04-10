@@ -474,7 +474,7 @@
     </xsl:if>
   </xsl:template>
 
-  <xsl:template match="literal|code|classname|parameter|varname|type|function|sgmltag">
+  <xsl:template match="literal|code|classname|parameter|varname|type|sgmltag">
     <xsl:if test="preceding-sibling::node()[1][self::replaceable] or following-sibling::node()[1][self::replaceable] or following-sibling::node()[1][self::emphasis] or substring(following-sibling::node()[1],1,1) = 's' or substring(following-sibling::node()[1],1,1) = '’'">
       <xsl:text>+</xsl:text>
     </xsl:if>
@@ -489,6 +489,27 @@
     <xsl:text>+</xsl:text>
     <xsl:if test="preceding-sibling::node()[1][self::replaceable] or following-sibling::node()[1][self::replaceable] or following-sibling::node()[1][self::emphasis] or substring(following-sibling::node()[1],1,1) = 's' or substring(following-sibling::node()[1],1,1) = '’'">
       <xsl:text>+</xsl:text>
+    </xsl:if>
+    <xsl:if test="(following-sibling::text()[1] = following-sibling::node()[1]) and not(contains($punctuation, substring(following-sibling::text()[1], 1, 1)))">
+      <xsl:text> </xsl:text>
+    </xsl:if>
+  </xsl:template>
+
+  <xsl:template match="function">
+    <xsl:if test="preceding-sibling::node()[1][self::replaceable] or following-sibling::node()[1][self::replaceable] or following-sibling::node()[1][self::emphasis] or substring(following-sibling::node()[1],1,1) = 's' or substring(following-sibling::node()[1],1,1) = '’'">
+      <xsl:text>`</xsl:text>
+    </xsl:if>
+    <xsl:text>`</xsl:text>
+    <xsl:if test="contains(., '`')">
+      <xsl:text>$$</xsl:text>
+    </xsl:if>
+    <xsl:value-of select="normalize-space(replace(., '([\[\]\*\^~])', '\\$1', 'm'))"/>
+    <xsl:if test="contains(., '`')">
+      <xsl:text>$$</xsl:text>
+    </xsl:if>
+    <xsl:text>`</xsl:text>
+    <xsl:if test="preceding-sibling::node()[1][self::replaceable] or following-sibling::node()[1][self::replaceable] or following-sibling::node()[1][self::emphasis] or substring(following-sibling::node()[1],1,1) = 's' or substring(following-sibling::node()[1],1,1) = '’'">
+      <xsl:text>`</xsl:text>
     </xsl:if>
     <xsl:if test="(following-sibling::text()[1] = following-sibling::node()[1]) and not(contains($punctuation, substring(following-sibling::text()[1], 1, 1)))">
       <xsl:text> </xsl:text>
@@ -532,11 +553,18 @@
   </xsl:template>
 
   <xsl:template match="ulink">
-    <xsl:text>link:$$</xsl:text>
-    <xsl:value-of select="@url"/>
-    <xsl:text>$$[</xsl:text>
-    <xsl:apply-templates/>
-    <xsl:text>]</xsl:text>
+    <xsl:choose>
+      <xsl:when test="@url = . or . = ''">
+        <xsl:value-of select="@url"/>
+      </xsl:when>
+      <xsl:when test="not(@url = following-sibling::text()[1])">
+        <xsl:text>link:$$</xsl:text>
+          <xsl:value-of select="@url"/>
+          <xsl:text>$$[</xsl:text>
+          <xsl:apply-templates/>
+          <xsl:text>]</xsl:text>
+      </xsl:when>
+    </xsl:choose>
     <xsl:if test="(following-sibling::text()[1] = following-sibling::node()[1]) and not(contains($punctuation, substring(following-sibling::text()[1], 1, 1)))">
       <xsl:text> </xsl:text>
     </xsl:if>
@@ -628,10 +656,11 @@
     <xsl:text>.</xsl:text>
     <xsl:apply-templates select="title"/>
     <xsl:value-of select="util:carriage-returns(1)"/>
-    <xsl:text>image::</xsl:text>
     <xsl:if test="imageobject[@role = 'web']">
-      <xsl:apply-templates select="imageobject" />
+        <xsl:text>image::</xsl:text>
+        <xsl:apply-templates select="imageobject" />
     </xsl:if>
+    <xsl:apply-templates select="mediaobject/imageobject" />
     <xsl:value-of select="util:carriage-returns(1)"/>
   </xsl:template>
 
@@ -677,7 +706,8 @@
     <xsl:call-template name="process-id"/>
     <xsl:apply-templates select="." mode="title"/>
     <xsl:text>====</xsl:text>
-    <xsl:apply-templates select="programlisting|screen"/>
+    <xsl:value-of select="util:carriage-returns(2)"/>
+    <xsl:apply-templates select="*[not(self::title)]"/>
     <xsl:text>====</xsl:text>
     <xsl:value-of select="util:carriage-returns(2)"/>
   </xsl:template>
@@ -702,13 +732,15 @@
   <xsl:template match="programlisting|screen">
     <!-- Preserve non-empty "language" attribute if present -->
     <xsl:if test="@language != ''">
+    <xsl:value-of select="util:carriage-returns(1)"/>
       <xsl:text>[source, </xsl:text>
       <xsl:value-of select="@language"/>
       <xsl:text>]</xsl:text>
       <xsl:value-of select="util:carriage-returns(1)"/>
     </xsl:if>
     <!-- possible JBoss-only tweak, we use role the same as language -->
-    <xsl:if test="@role != ''">
+    <xsl:if test="@role != '' and @language = ''">
+      <xsl:value-of select="util:carriage-returns(1)"/>
       <xsl:text>[source, </xsl:text>
       <xsl:value-of select="@role"/>
       <xsl:text>]</xsl:text>
