@@ -474,7 +474,7 @@
     </xsl:if>
   </xsl:template>
 
-  <xsl:template match="literal|code|classname|parameter|varname|type|sgmltag">
+  <xsl:template match="literal|code|classname|parameter|varname|type|sgmltag|methodname">
     <xsl:if test="preceding-sibling::node()[1][self::replaceable] or following-sibling::node()[1][self::replaceable] or following-sibling::node()[1][self::emphasis] or substring(following-sibling::node()[1],1,1) = 's' or substring(following-sibling::node()[1],1,1) = '’'">
       <xsl:text>+</xsl:text>
     </xsl:if>
@@ -512,6 +512,26 @@
       <xsl:text>`</xsl:text>
     </xsl:if>
     <xsl:if test="(following-sibling::text()[1] = following-sibling::node()[1]) and not(contains($punctuation, substring(following-sibling::text()[1], 1, 1)))">
+      <xsl:text> </xsl:text>
+    </xsl:if>
+  </xsl:template>
+
+  <xsl:template match="citetitle">
+    <xsl:text>*_</xsl:text>
+    <xsl:value-of select="normalize-space(.)"/>
+    <xsl:text>_*</xsl:text>
+    <xsl:if test="following-sibling::text()[1] != following-sibling::node()[1] or following-sibling::node()[1][position() = last()]">
+      <!-- Add a space if the next node is not a text node -->
+      <xsl:text> </xsl:text>
+    </xsl:if>
+  </xsl:template>
+
+  <xsl:template match="guibutton">
+    <xsl:text>btn:[</xsl:text>
+    <xsl:value-of select="normalize-space(.)"/>
+    <xsl:text>]</xsl:text>
+    <xsl:if test="following-sibling::text()[1] != following-sibling::node()[1] or following-sibling::node()[1][position() = last()]">
+      <!-- Add a space if the next node is not a text node -->
       <xsl:text> </xsl:text>
     </xsl:if>
   </xsl:template>
