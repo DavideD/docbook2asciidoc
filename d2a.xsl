@@ -422,7 +422,7 @@
   </xsl:template>
 
   <xsl:template match="filename">
-    <xsl:text>_</xsl:text>
+    <xsl:text>[filename]+</xsl:text>
     <xsl:if test="contains(., '~') or contains(., '_')">
       <xsl:text>$$</xsl:text>
     </xsl:if>
@@ -430,7 +430,7 @@
     <xsl:if test="contains(., '~') or contains(., '_')">
       <xsl:text>$$</xsl:text>
     </xsl:if>
-    <xsl:text>_</xsl:text>
+    <xsl:text>+</xsl:text>
     <xsl:if test="not(following-sibling::node()[1][self::userinput]) and matches(following-sibling::node()[1], '^[a-zA-Z]')">
       <xsl:if test="(following-sibling::text()[1] = following-sibling::node()[1]) and not(contains($punctuation, substring(following-sibling::text()[1], 1, 1)))">
         <xsl:text> </xsl:text>
@@ -474,7 +474,14 @@
     </xsl:if>
   </xsl:template>
 
-  <xsl:template match="literal|code|classname|parameter|varname|type|sgmltag|methodname|interfacename">
+  <xsl:template match="literal|code|classname|parameter|varname|type|sgmltag|methodname|interfacename|parameter|productname|acronym|application|property|function">
+    <xsl:choose>
+      <xsl:when test="name() != 'literal'">
+        <xsl:text>[</xsl:text>
+        <xsl:value-of select="name()" />
+        <xsl:text>]</xsl:text>
+      </xsl:when>
+    </xsl:choose>
     <xsl:if test="preceding-sibling::node()[1][self::replaceable] or following-sibling::node()[1][self::replaceable] or following-sibling::node()[1][self::emphasis] or substring(following-sibling::node()[1],1,1) = 's' or substring(following-sibling::node()[1],1,1) = '’'">
       <xsl:text>+</xsl:text>
     </xsl:if>
@@ -489,27 +496,6 @@
     <xsl:text>+</xsl:text>
     <xsl:if test="preceding-sibling::node()[1][self::replaceable] or following-sibling::node()[1][self::replaceable] or following-sibling::node()[1][self::emphasis] or substring(following-sibling::node()[1],1,1) = 's' or substring(following-sibling::node()[1],1,1) = '’'">
       <xsl:text>+</xsl:text>
-    </xsl:if>
-    <xsl:if test="(following-sibling::text()[1] = following-sibling::node()[1]) and not(contains($punctuation, substring(following-sibling::text()[1], 1, 1)))">
-      <xsl:text> </xsl:text>
-    </xsl:if>
-  </xsl:template>
-
-  <xsl:template match="function">
-    <xsl:if test="preceding-sibling::node()[1][self::replaceable] or following-sibling::node()[1][self::replaceable] or following-sibling::node()[1][self::emphasis] or substring(following-sibling::node()[1],1,1) = 's' or substring(following-sibling::node()[1],1,1) = '’'">
-      <xsl:text>`</xsl:text>
-    </xsl:if>
-    <xsl:text>`</xsl:text>
-    <xsl:if test="contains(., '`')">
-      <xsl:text>$$</xsl:text>
-    </xsl:if>
-    <xsl:value-of select="normalize-space(replace(., '([\[\]\*\^~])', '\\$1', 'm'))"/>
-    <xsl:if test="contains(., '`')">
-      <xsl:text>$$</xsl:text>
-    </xsl:if>
-    <xsl:text>`</xsl:text>
-    <xsl:if test="preceding-sibling::node()[1][self::replaceable] or following-sibling::node()[1][self::replaceable] or following-sibling::node()[1][self::emphasis] or substring(following-sibling::node()[1],1,1) = 's' or substring(following-sibling::node()[1],1,1) = '’'">
-      <xsl:text>`</xsl:text>
     </xsl:if>
     <xsl:if test="(following-sibling::text()[1] = following-sibling::node()[1]) and not(contains($punctuation, substring(following-sibling::text()[1], 1, 1)))">
       <xsl:text> </xsl:text>
