@@ -702,6 +702,21 @@
     <xsl:apply-templates select="imagedata" />
     <xsl:value-of select="util:carriage-returns(2)"/>
   </xsl:template>
+
+  <xsl:template match="mediaobject">
+    <xsl:if test="caption">
+      <xsl:call-template name="process-id"/>
+      <xsl:text>.</xsl:text>
+      <xsl:apply-templates select="caption"/>
+      <xsl:value-of select="util:carriage-returns(1)"/>
+    </xsl:if>
+    <xsl:apply-templates select="imageobject" />
+  </xsl:template>
+
+  <xsl:template match="caption">
+    <xsl:value-of select="normalize-space(para/text())"/>
+  </xsl:template>
+
   
   <xsl:template match="imagedata">
     <xsl:value-of select="@fileref"/>
