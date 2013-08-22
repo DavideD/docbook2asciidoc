@@ -620,8 +620,22 @@
     </xsl:for-each>
   </xsl:template>
 
+  <xsl:function name="util:indentByDepth">
+    <xsl:param name="depth"/>
+    <xsl:param name="char"/>
+    <xsl:variable name="indenter">
+      <xsl:for-each select="0 to $depth"><xsl:value-of select="$char"/></xsl:for-each>
+    </xsl:variable>
+    <xsl:value-of select="$indenter"/>
+  </xsl:function>
+
   <xsl:template match="itemizedlist">
     <xsl:call-template name="process-id"/>
+    <xsl:variable name="depth" select="count(ancestor::itemizedlist|ancestor::variablelist|ancestor::orderedlist|ancestor::simplelist)" />
+    <xsl:variable name="indenter" select="util:indentByDepth($depth, '*')"/>
+    <xsl:if test="parent::para">
+      <xsl:value-of select="util:carriage-returns(2)"/>
+    </xsl:if>
     <xsl:if test="@spacing">
       <xsl:text>[options="</xsl:text>
       <xsl:value-of select="@spacing"/>
@@ -629,7 +643,8 @@
       <xsl:value-of select="util:carriage-returns(1)"/>
     </xsl:if>
     <xsl:for-each select="listitem">
-      <xsl:text>* </xsl:text>
+      <xsl:value-of select="$indenter"/>
+      <xsl:text> </xsl:text>
       <xsl:apply-templates/>
       <xsl:choose>
         <xsl:when test="position() = last()">
@@ -641,6 +656,11 @@
 
   <xsl:template match="orderedlist">
     <xsl:call-template name="process-id"/>
+    <xsl:variable name="depth" select="count(ancestor::itemizedlist|ancestor::variablelist|ancestor::orderedlist|ancestor::simplelist)" />
+    <xsl:variable name="indenter" select="util:indentByDepth($depth, '.')"/>
+    <xsl:if test="parent::para">
+      <xsl:value-of select="util:carriage-returns(2)"/>
+    </xsl:if>
     <xsl:if test="@spacing">
       <xsl:text>[options="</xsl:text>
       <xsl:value-of select="@spacing"/>
@@ -648,7 +668,8 @@
       <xsl:value-of select="util:carriage-returns(1)"/>
     </xsl:if>
     <xsl:for-each select="listitem">
-      <xsl:text>. </xsl:text>
+      <xsl:value-of select="$indenter"/>
+      <xsl:text> </xsl:text>
       <xsl:apply-templates/>
       <xsl:value-of select="util:carriage-returns(2)"/>
     </xsl:for-each>
@@ -657,6 +678,9 @@
   <xsl:template match="simplelist">
     <xsl:value-of select="util:carriage-returns(1)"/>
     <xsl:call-template name="process-id"/>
+    <xsl:if test="parent::para">
+      <xsl:value-of select="util:carriage-returns(2)"/>
+    </xsl:if>
     <xsl:for-each select="member">
       <xsl:apply-templates/>
       <xsl:if test="position() &lt; last()">
