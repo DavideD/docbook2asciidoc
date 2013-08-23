@@ -423,6 +423,8 @@
 
   <xsl:template match="filename">
     <xsl:text>[filename]+</xsl:text>
+    <!-- double + if the char following the filename is a letter -->
+    <xsl:if test="contains(., ' ') or matches(substring(following-sibling::text()[1],1,1), '^[a-zA-z]')"><xsl:text>+</xsl:text></xsl:if>
     <xsl:if test="contains(., '~') or contains(., '_')">
       <xsl:text>$$</xsl:text>
     </xsl:if>
@@ -431,6 +433,8 @@
       <xsl:text>$$</xsl:text>
     </xsl:if>
     <xsl:text>+</xsl:text>
+    <!-- double + if the char following the filename is a letter -->
+    <xsl:if test="contains(., ' ') or matches(substring(following-sibling::text()[1],1,1), '^[a-zA-z]')"><xsl:text>+</xsl:text></xsl:if>
     <xsl:if test="not(following-sibling::node()[1][self::userinput]) and matches(following-sibling::node()[1], '^[a-zA-Z]')">
       <xsl:if test="(following-sibling::text()[1] = following-sibling::node()[1]) and not(contains($punctuation, substring(following-sibling::text()[1], 1, 1)))">
         <xsl:text> </xsl:text>
