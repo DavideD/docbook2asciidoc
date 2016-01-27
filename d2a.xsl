@@ -977,5 +977,29 @@
       <xsl:value-of select="util:carriage-returns(1)"/>
     </xsl:if>
   </xsl:template>
+
+  <xsl:template match="*[@role='tck-testable']" priority="100">
+    <xsl:text>[tck-testable]#</xsl:text>
+    <xsl:apply-templates/>
+    <xsl:text>#</xsl:text>
+  </xsl:template>
+
+  <xsl:template match="*[@role='tck-not-testable']" priority="100">
+    <xsl:text>[tck-not-testable]#</xsl:text>
+    <xsl:apply-templates/>
+    <xsl:text>#</xsl:text>
+  </xsl:template>
+  
+  <xsl:template match="*[@role='tck-needs-update']" priority="100">
+    <xsl:text>[tck-needs-update]#</xsl:text>
+    <xsl:apply-templates/>
+    <xsl:text>#</xsl:text>
+  </xsl:template>
+  
+  <xsl:template match="*[@role='tck-ignore']" priority="100">
+    <xsl:text>[tck-ignore]#</xsl:text>
+    <xsl:apply-templates/>
+    <xsl:text>#</xsl:text>
+  </xsl:template>
 </xsl:stylesheet>
 
