@@ -22,6 +22,7 @@ convert()
   for xml in $xmls
   do
     output_filename=${xml/.$EXT/.$OEXT}
+    output_filename=$OUT_DIR${output_filename#$SCAN_DIR}
     echo "Processing $xml -> $output_filename"    
     CMD="java -jar $DIR/saxon9he.jar -xi -s:$xml -o:$output_filename -xsl:$DIR/d2a.xsl chunk-output=true"
     $CMD
