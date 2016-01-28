@@ -153,7 +153,11 @@
   <xsl:template match="indexterm"/>
 
   <xsl:template match="para/text()">
-    <xsl:value-of select="normalize-space(.)"/>
+    <xsl:call-template name="normalize-space"/>
+  </xsl:template>
+
+  <xsl:template match="phrase">
+    <xsl:call-template name="process-roles"/>
     <xsl:if test="following-sibling::text()[1] != following-sibling::node()[1] or following-sibling::node()[1][position() = last()]">
       <!-- Add a space if the next node is not a text node -->
       <xsl:text> </xsl:text>
@@ -161,18 +165,22 @@
   </xsl:template>
 
   <xsl:template match="phrase/text()">
-    <xsl:value-of select="normalize-space(.)"/>
-    <xsl:if test="following-sibling::text()[1] != following-sibling::node()[1] or following-sibling::node()[1][position() = last()]">
-      <!-- Add a space if the next node is not a text node -->
-      <xsl:text> </xsl:text>
-    </xsl:if>
+    <xsl:call-template name="normalize-space"/>
   </xsl:template>
 
   <xsl:template match="ulink/text()">
     <xsl:value-of select="normalize-space(.)"/>
   </xsl:template>
 
+  <xsl:template match="title">
+    <xsl:call-template name="process-roles"/>
+  </xsl:template>
+
   <xsl:template match="title/text()">
+    <xsl:call-template name="normalize-space"/>
+  </xsl:template>
+
+  <xsl:template name="normalize-space">
     <xsl:value-of select="normalize-space(.)"/>
     <xsl:if test="following-sibling::text()[1] != following-sibling::node()[1] or following-sibling::node()[1][position() = last()]">
       <!-- Add a space if the next node is not a text node -->
@@ -303,7 +311,7 @@
 
   <xsl:template match="para|simpara">
     <xsl:call-template name="process-id"/>
-    <xsl:apply-templates select="node()"/>
+    <xsl:call-template name="process-roles"/>
     <xsl:choose>
       <xsl:when test="parent::listitem">
         <xsl:value-of select="util:carriage-returns(1)"/>
@@ -313,7 +321,7 @@
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
-
+ 
   <xsl:template match="formalpara">
     <xsl:call-template name="process-id"/>
     <!-- Put formalpara <title> in bold (drop any inline formatting) -->
@@ -393,7 +401,7 @@
 
   <xsl:template match="tip/para|warning/para|note/para|caution/para|important/para">
     <!--Special handling for admonition paras to contract whitespace-->
-    <xsl:apply-templates select="node()"/>
+    <xsl:call-template name="process-roles"/>
     <xsl:if test="position() != last()">
       <xsl:value-of select="util:carriage-returns(2)"/>
     </xsl:if>
@@ -405,11 +413,7 @@
   </xsl:template>
 
   <xsl:template match="listitem">
-    <xsl:apply-templates select="node()"/>
-  </xsl:template>
-
-  <xsl:template match="phrase">
-    <xsl:apply-templates/>
+    <xsl:call-template name="process-roles"/>
   </xsl:template>
 
   <xsl:template match="emphasis [@role='bold']">
@@ -790,21 +794,27 @@
   <!-- Asciidoc-formatted programlisting|screen (don't contain child elements) -->
   <xsl:template match="programlisting|screen">
     <!-- Preserve non-empty "language" attribute if present -->
-    <xsl:if test="@language != ''">
-    <xsl:value-of select="util:carriage-returns(1)"/>
-      <xsl:text>[source, </xsl:text>
-      <xsl:value-of select="@language"/>
-      <xsl:text>]</xsl:text>
-      <xsl:value-of select="util:carriage-returns(1)"/>
-    </xsl:if>
-    <!-- possible JBoss-only tweak, we use role the same as language -->
-    <xsl:if test="@role != '' and @language = ''">
-      <xsl:value-of select="util:carriage-returns(1)"/>
-      <xsl:text>[source, </xsl:text>
-      <xsl:value-of select="@role"/>
-      <xsl:text>]</xsl:text>
-      <xsl:value-of select="util:carriage-returns(1)"/>
-    </xsl:if>
+    <xsl:choose>
+      <xsl:when test="@language">
+        <xsl:value-of select="util:carriage-returns(1)"/>
+        <xsl:text>[source, </xsl:text>
+        <xsl:value-of select="@language"/>
+        <xsl:text>]</xsl:text>
+        <xsl:value-of select="util:carriage-returns(1)"/>
+      </xsl:when>
+      <xsl:when test="@role">
+        <!-- possible JBoss-only tweak, we use role the same as language -->
+        <xsl:value-of select="util:carriage-returns(1)"/>
+        <xsl:text>[source, </xsl:text>
+        <xsl:value-of select="@role"/>
+        <xsl:text>]</xsl:text>
+        <xsl:value-of select="util:carriage-returns(1)"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:text>[source, JAVA]</xsl:text>
+        <xsl:value-of select="util:carriage-returns(1)"/>
+      </xsl:otherwise>
+    </xsl:choose>
     <xsl:choose>
       <!-- Must format as a [listing block] for proper AsciiDoc processing, if programlisting text contains 4 hyphens in a row -->
       <xsl:when test="matches(., '----')">
@@ -977,5 +987,20 @@
       <xsl:value-of select="util:carriage-returns(1)"/>
     </xsl:if>
   </xsl:template>
-</xsl:stylesheet>
 
+  <xsl:template name="process-roles">
+    <xsl:param name="nodes" select="node()"/>
+      <xsl:choose>
+        <xsl:when test="matches(@role, 'tck-.+')">
+          <xsl:text>[</xsl:text>
+          <xsl:value-of select="@role"/>
+          <xsl:text>]#</xsl:text>
+          <xsl:apply-templates select="$nodes"/>
+          <xsl:text>#</xsl:text>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:apply-templates select="$nodes"/>
+        </xsl:otherwise>
+      </xsl:choose>
+  </xsl:template>
+</xsl:stylesheet>
