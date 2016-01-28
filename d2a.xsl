@@ -393,7 +393,9 @@
     <xsl:apply-templates select="." mode="title"/>
     <xsl:text>====</xsl:text>
     <xsl:value-of select="util:carriage-returns(1)"/>
-    <xsl:apply-templates select="node()[not(self::title)]"/>
+    <xsl:call-template name="process-roles">
+      <xsl:with-param name="nodes" select="node()[not(self::title)]" />
+    </xsl:call-template>
     <xsl:value-of select="util:carriage-returns(1)"/>
     <xsl:text>====</xsl:text>
     <xsl:value-of select="util:carriage-returns(2)"/>
@@ -653,7 +655,7 @@
     <xsl:for-each select="listitem">
       <xsl:value-of select="$indenter"/>
       <xsl:text> </xsl:text>
-      <xsl:apply-templates/>
+      <xsl:call-template name="process-roles" />
       <xsl:choose>
         <xsl:when test="position() = last()">
           <xsl:value-of select="util:carriage-returns(2)"/>
@@ -678,7 +680,7 @@
     <xsl:for-each select="listitem">
       <xsl:value-of select="$indenter"/>
       <xsl:text> </xsl:text>
-      <xsl:apply-templates/>
+      <xsl:call-template name="process-roles" />
       <xsl:value-of select="util:carriage-returns(2)"/>
     </xsl:for-each>
   </xsl:template>
